@@ -3,8 +3,8 @@ package edu.cmu.cs.cs214.rec08.queue;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import net.jcip.annotations.ThreadSafe;
 import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Modify this class to be thread-safe and be an UnboundedBlockingQueue.
@@ -22,14 +22,29 @@ public class UnboundedBlockingQueue<E> implements SimpleQueue<E> {
 
     public E peek() { return queue.peek(); }
 
-    public void enqueue(E element) { queue.add(element); }
+    public void enqueue(E element) { 
+        if (element == null) {
+            throw new NullPointerException("Cannot enqueue null element");
+        }
+        queue.addLast(element);
+        // Wake up one waiting consumer thread if any
+        notifyAll();
+    }
+
 
     /**
      * TODO:  Change this method to block (waiting for an enqueue) rather
      * than throw an exception.  Completing this task may require
      * modifying other methods.
+     * @throws InterruptedException 
      */
-    public E dequeue() { return queue.remove(); }
+    public E dequeue() throws InterruptedException { 
+        while (queue.isEmpty()){
+            wait();
+
+        }
+        return queue.remove(); 
+    }
 
     public String toString() { return queue.toString(); }
 }
